@@ -4,6 +4,9 @@
 A simple C-like Interpreter
 
 ## Members
+[张海](https://github.com/betray12138)  
+[郑秋实](https://github.com/ZhengQiushi)  
+[王泽鉴](https://github.com/william-wang-stu)
 
 ## Progress
 
