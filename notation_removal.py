@@ -4,8 +4,7 @@
 # ret      dst_code     has been solved
 
 
-#for the condition with /* 123 // ,this function will output /*123 while the real output is /*123 //
-# but when the output put into lex, lex will trigger the ERROR at the same line
+#update the lock area
 
 def notation_removal(src_code):
     #remove the space and \t head and tail
@@ -13,8 +12,9 @@ def notation_removal(src_code):
     code_len=len(src_code);
     dst_code=''
     i=0
+    lock=0                #use to make sure the lock area
     while(i<code_len):
-        if(i<code_len-1):
+        if(i<code_len-1 and i>=lock):
             if(src_code[i]=='/' and src_code[i+1]=='/'):
                 #solve the condition with //
                 while(i!=code_len and src_code[i]!='\n'):
@@ -30,6 +30,7 @@ def notation_removal(src_code):
                     while (i<=code_len-2 and not(src_code[i]=='*' and src_code[i+1]=='/')):
                         i+=1
                     if(i==code_len-1):
+                        lock=i
                         i=point      #hasn't found the */ ,use pointer to recover
                     else:
                         i+=2
