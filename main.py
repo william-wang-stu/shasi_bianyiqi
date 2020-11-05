@@ -1,5 +1,5 @@
 from lexer.notation_removal import notation_removal
-from lexer.lexer import *
+from lexer.lexer import TokenType, Lexer
 
 example_text_list = [
     # '24abc',
