@@ -9,7 +9,7 @@
 def notation_removal(src_code):
     #remove the space and \t head and tail
     src_code=src_code.strip(" \t")
-    code_len=len(src_code);
+    code_len=len(src_code)
     dst_code=''
     i=0
     lock=0                #use to make sure the lock area
@@ -18,14 +18,14 @@ def notation_removal(src_code):
             if(src_code[i]=='/' and src_code[i+1]=='/'):
                 #solve the condition with //
                 while(i!=code_len and src_code[i]!='\n'):
-                    i+=1;
+                    i+=1
                     
             elif (src_code[i]=='/' and src_code[i+1]=='*'):
                 #solve the condition with /* */
                 point=i;              #use pointer to sign
-                i=i+2;
+                i=i+2
                 if(i==code_len):      #to prevent overflow
-                    i=point;
+                    i=point
                 else:
                     while (i<=code_len-2 and not(src_code[i]=='*' and src_code[i+1]=='/')):
                         i+=1
@@ -40,6 +40,7 @@ def notation_removal(src_code):
 
     return dst_code
 
+'''
 def main():
     lines=[]
     while True:
@@ -47,7 +48,7 @@ def main():
             lines.append(input())
         except:                   #use ctrl+c to trigger interrupt
             break
-    code='';
+    code=''
     for j in range (len(lines)-1):
         code+=lines[j]
         code+='\n'
@@ -57,3 +58,4 @@ def main():
 
 
 main()
+'''
