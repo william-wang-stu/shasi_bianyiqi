@@ -1,17 +1,5 @@
 from enum import Enum
-
-
-### 扩展功能一: 报错
-class Error(Exception):
-    def __init__(self, error_code=None, token=None, message=None):
-        self.error_code = error_code
-        self.token = token
-        # add exception class name before the message
-        self.message = f'{self.__class__.__name__}: {message}'
-
-class LexerError(Error):
-    pass
-
+from Error_Detection import LexerError
 
 ### 词法分析器
 class TokenType(Enum):
