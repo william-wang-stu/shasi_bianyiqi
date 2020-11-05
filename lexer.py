@@ -13,6 +13,11 @@ from enum import Enum
 #   功能: 现在main函数部分是用来作测试的, 被注释部分是正式版本;
 #         现在需要增加更多的测试, 最基本的是把上述两个功能完成以后, 跑一下PPT里的大作业部分看下行不行
 
+
+'''
+    Date : 11.05 add the detection for double char operation mark  by Truth
+'''
+
 ### 扩展功能一: 报错
 class Error(Exception):
     def __init__(self, error_code=None, token=None, message=None):
@@ -50,12 +55,13 @@ class TokenType(Enum):
     MINUS         = '-'
     MUL           = '*'
     DIV           = '/'
-    EQUAL         = '=='
     LG            = '>'
-    LGE           = '>='
     LT            = '<'
+
     LTE           = '<='
     NOT_EQUAL     = '!='
+    LGE           = '>='
+    EQUAL         = '=='
 
     # 界符
     SEMI          = ';'
@@ -260,6 +266,31 @@ class Lexer:
                 self.advance()
                 return token
 
+            # double-character operation token  ADDED BY TRUTH
+            if self.current_char == "<" or self.current_char == ">" or self.current_char == "!" or self.current_char == "=":
+                if self.peek() == '=':
+                    '''
+                    LTE           = '<='
+                    NOT_EQUAL     = '!='
+                    LGE           = '>='
+                    EQUAL         = '=='
+                    '''
+                    # get the whole operation mark
+                    double_char_operation = self.current_char + self.peek()
+                    # find it!
+                    token_type = TokenType(double_char_operation)
+                    token = Token(
+                    type=token_type,
+                    value=token_type.value,  
+                    lineno=self.lineno,
+                    column=self.column,
+                    )
+                    # do a double advance
+                    self.advance()
+                    self.advance()
+                    return token
+
+
             # single-character token
             try:
                 # get enum member by value, e.g.
@@ -299,6 +330,19 @@ example_text_list = [
     # 'if123',
     # 'if=123',
     '''
+    int main(){
+        i<=j
+        >= ==
+        !=
+        <>
+
+        
+
+    }
+    '''
+
+]
+'''
 int  program(int a,int b,int c)
 {
 	int i;
@@ -319,8 +363,6 @@ int  program(int a,int b,int c)
 	return i;
 }
 '''
-]
-
 if __name__ == '__main__':
     for example_text in example_text_list:
         print(f"Lexer for {example_text}:")
