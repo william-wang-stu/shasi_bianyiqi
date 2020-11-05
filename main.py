@@ -1,5 +1,6 @@
-from lexer.notation_removal import notation_removal
-from lexer.lexer import TokenType, Lexer
+from Lexer import TokenType, Lexer
+from notation_removal import notation_removal
+from Parser import test
 
 example_text_list = [
     # '24abc',
@@ -46,7 +47,10 @@ int  program(int a,int b,int c)
 }
 '''
 
+
 if __name__ == '__main__':
+    test()
+    '''
     for example_text in example_text_list:
         print(f"Lexer for {example_text}:")
         example_text = notation_removal(example_text)
@@ -56,6 +60,7 @@ if __name__ == '__main__':
             if token.type == TokenType.EOF:
                 break
             print(token)
+    '''
 
     '''
     while True:
