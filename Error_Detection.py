@@ -1,4 +1,5 @@
 ### 扩展功能一: 报错
+from enum import Enum
 
 class ErrorCode(Enum):
     UNEXPECTED_TOKEN = 'Unexpected token'

@@ -30,49 +30,183 @@ class Parser:
                 error_code=ErrorCode.UNEXPECTED_TOKEN,
                 token=self.current_token,
             )
+    
+    def program(self):
+        '''program : type_spec variable LPAREN formal_param_list RPAREN block'''
+        program_type = self.type_spec()
+        program_name = self.variable().value
+        self.eat(TokenType.LPAREN)
+        program_param = self.formal_param_list()
+        self.eat(TokenType.RPAREN)
+        program_block = self.block()
+        # program_node = Program()
+        # return program_node
+    
+    def type_spec(self):
+        '''type_spec : INT | VOID'''
+        token = self.current_token
+        if self.current_token.type == TokenType.INT:
+            self.eat(TokenType.INT)
+        else:
+            self.eat(TokenType.VOID)
+        # type_node = Type()
+        # return type_node
 
+    def formal_param_list(self):
+        '''formal_param_list : formal_param | VOID | EMPTY'''
+        if self.current_token.type == TokenType.INT:
+            param_list = self.formal_param()
+        elif self.current_token.type == TokenType.VOID:
+            param_list = [TokenType.VOID]
+            self.eat(TokenType.VOID)
+        else:
+            param_list = []
+        
+        return param_list
+    
+    def formal_param(self):
+        '''formal_param : INT ID ( COMMA INT ID )*'''
+        param_list = []
+
+        self.eat(TokenType.INT)
+        param_list.append(self.current_token)
+        self.eat(TokenType.ID)
+        while self.current_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            param_list.append(self.current_token)
+            self.eat(TokenType.ID)
+        
+        return param_list
+    
+    def block(self):
+        '''block : LBRACE declarations compound_statement RBRACE'''
+        self.eat(TokenType.LBRACE)
+        declarations = self.declarations()
+        compound_statement = self.compound_statement()
+        self.eat(TokenType.RBRACE)
+        # block_node = Block()
+        # return block_node
+
+    def declarations(self):
+        '''declarations : empty | ( variable_declaration SEMI )*'''
+        declaration_list = []
+
+        while self.current_token.type == TokenType.INT:
+            variable_declaration = self.variable_declaration()
+            declaration_list.append(variable_declaration)
+            self.eat(TokenType.SEMI)
+        
+        return declaration_list
+
+    def empty(self):
+        pass
+
+    def variable_declaration(self):
+        '''variable_declaration : INT ID'''
+        self.eat(TokenType.INT)
+        var_name = self.variable()
+        var_type = TokenType.INTEGER_CONST
+        # var_node = VarNode()
+        # retunr var_node
+    
+    def compound_statement(self):
+        '''compound_statement : ( statement )+'''
+        statement_list = []
+
+        while self.current_token.type == TokenType.ID or self.current_token.type == TokenType.RETURN or self.current_token.type == TokenType.IF or self.current_token.type == TokenType.WHILE:
+            statement = self.statement()
+            statement_list.append(statement)
+        
+        return statement_list
+
+    def statement(self):
+        '''statement : assignment_statement | return_statement | while_statement | if_statement'''
+        if self.current_token.type == TokenType.ID:
+            statement = self.assignment_statement()
+        elif self.current_token.type == TokenType.RETURN:
+            statement = self.return_statement()
+        elif self.current_token.type == TokenType.IF:
+            statement = self.if_statement()
+        else:
+            statement = self.while_statement()
+        
+        return statement
+
+    def assignment_statement(self):
+        '''assignment_statement : ID ASSIGN expr SEMI'''
+        left = self.variable()
+        token = self.current_token
+        self.eat(TokenType.ASSIGN)
+        right = self.expr()
+        self.eat(TokenType.SEMI)
+    
+    def return_statement(self):
+        '''return_statement : RETURN ( expr )? SEMI'''
+        self.eat(TokenType.RETURN)
+
+        if self.current_token.type != TokenType.SEMI:
+            node = self.expr()
+        
+        self.eat(TokenType.SEMI)
+    
+    def while_statement(self):
+        '''while_statement : WHILE LPAREN expr RPAREN block'''
+        self.eat(TokenType.WHILE)
+        self.eat(TokenType.LPAREN)
+        expr = self.expr()
+        self.eat(TokenType.RPAREN)
+        block = self.block()
+    
+    def if_statement(self):
+        '''if_statement : IF LPAREN expr RPAREN block ( ELSE block )?'''
+        self.eat(TokenType.IF)
+        self.eat(TokenType.LPAREN)
+        self.eat(TokenType.RPAREN)
+    
     def parse(self):
         '''
-        Program : Type Variable LPAREN RPAREN Block
+        program                 : type_spec variable LPAREN formal_param_list RPAREN block
 
-        Type    : INT | VOID
+        type_spec               : INT | VOID
 
-        Block   : LBRACE Declarations Compound_statement RBRACE
+        formal_param_list       : formal_param | VOID | EMPTY
 
-        Declarations            : Empty | Variable_declaration ( SEMI Variable_declaration )*
+        formal_param            : INT ID ( COMMMA INT ID )*
 
-        Empty   : 
+        block                   : LBRACE declarations compound_statement RBRACE
 
-        Variable_declaration    : INT Variable
+        declarations            : empty | ( variable_declaration SEMI )*
 
-        Compound_statement      : (Statement)+
+        empty : 
 
-        Statement   : Assignment_statement | Return_statement | While_statement | If_statement
+        variable_declaration    : INT ID
 
-        Assignment_statement    : Variable ASSIGN Expr
+        compound_statement      : ( statement )+
 
-        Return_statement        : RETURN ( Expr )*
+        statement               : assignment_statement | return_statement | while_statement | if_statement
 
-        While_statement         : WHILE LPAREN Expr RPAREN Block
+        assignment_statement    : ID ASSIGN expr SEMI
 
-        If_statement            : IF LPAREN Expr RPAREN Block ( ELSE Block )*
+        return_statement        : RETURN ( expr )? SEMI
 
-        Expr        : Relop_term ( Relop Relop_term )*
+        while_statement         : WHILE LPAREN expr RPAREN block
 
-        Relop       : LT | LTE | LG | LGE | EQUAL | NOT_EQUAL
+        if_statement            : IF LPAREN expr RPAREN block ( ELSE block )?
 
-        Relop_term  : Term ( (PLUS | MINUS) Term )*
+        expr                    : relop_term ( relop relop_term )*
 
-        Term        : Factor ( (MUL | DIV) Factor )*
+        relop                   : LT | LTE | LG | LGE | EQUAL | NOT_EQUAL
 
-        Factor      : INTEGER_CONST | LPAREN Expr RPAREN | Variable Formal_parameters
+        relop_term              : term ( (PLUS | MINUS) term )*
 
-        Formal_parameters       : Empty | Proccall_statement
+        term                    : factor ( (MUL | DIV) factor )*
+
+        factor                  : INTEGER_CONST | LPAREN expr RPAREN | ID | ID LPAREN actual_param RPAREN
+
+        actual_param            : expr (COMMA expr)*
         
-        Proccall_statement      : LPAREN Expr (COMMA Expr)* RPAREN
+        variable                : ID
 
-        Variable    : ID
-        
         '''
         node = self.program()
         if self.current_token.type != TokenType.EOF:
