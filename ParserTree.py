@@ -15,12 +15,6 @@ class Num(AST):
         self.value = token.value
 
 
-class UnaryOp(AST):
-    def __init__(self, op, expr):
-        self.token = self.op = op
-        self.expr = expr
-
-
 class Compound(AST):
     """Represents a 'BEGIN ... END' block"""
     def __init__(self):
@@ -32,6 +26,24 @@ class Assign(AST):
         self.left = left
         self.token = self.op = op
         self.right = right
+
+
+class Return(AST):
+    def __init__(self, expr):
+        self.expr = expr
+
+
+class While(AST):
+    def __init__(self, expr, block):
+        self.expr = expr
+        self.block = block
+
+
+class If(AST):
+    def __init__(self, expr, if_block, else_block):
+        self.expr = expr
+        self.if_block = if_block
+        self.else_block = else_block
 
 
 class Var(AST):
@@ -46,8 +58,11 @@ class NoOp(AST):
 
 
 class Program(AST):
-    def __init__(self, name, block):
+    def __init__(self, name, return_type, formal_params, block):
+        '''formal_params: list'''
         self.name = name
+        self.return_type = return_type
+        self.formal_params = formal_params
         self.block = block
 
 
@@ -58,9 +73,9 @@ class Block(AST):
 
 
 class VarDecl(AST):
-    def __init__(self, var_node, type_node):
-        self.var_node = var_node
-        self.type_node = type_node
+    def __init__(self, var, type):
+        self.var = var
+        self.type = type
 
 
 class Type(AST):
@@ -70,9 +85,15 @@ class Type(AST):
 
 
 class Param(AST):
-    def __init__(self, var_node, type_node):
+    def __init__(self, var, type):
+        self.var = var
+        self.type = type
+
+
+class ActualParam(AST):
+    def __init__(self, var_node, expr):
         self.var_node = var_node
-        self.type_node = type_node
+        self.expr = expr
 
 
 class ProcedureDecl(AST):

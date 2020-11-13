@@ -161,7 +161,92 @@ class Parser:
         '''if_statement : IF LPAREN expr RPAREN block ( ELSE block )?'''
         self.eat(TokenType.IF)
         self.eat(TokenType.LPAREN)
+        expr = self.expr()
         self.eat(TokenType.RPAREN)
+        block = self.block()
+
+        if self.current_token.type == TokenType.ELSE:
+            self.eat(TokenType.ELSE)
+            else_block = self.block()
+    
+    def expr(self):
+        '''expr : relop_term ( relop relop_term )*'''
+        node_list = [self.relop_term()]
+        
+        while self.current_token.type in (TokenType.LT, TokenType.LTE, TokenType.LG, TokenType.LGE, TokenType.EQUAL, TokenType.NOT_EQUAL):
+            op = self.relop()
+            node = self.relop_term()
+            node_list.append(node)
+    
+    def relop(self):
+        '''relop : LT | LTE | LG | LGE | EQUAL | NOT_EQUAL'''
+        pass
+
+    def relop_term(self):
+        '''relop_term : term ( (PLUS | MINUS) term )*'''
+        left_node = self.term()
+
+        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
+            token = self.current_token
+            if token.type == TokenType.PLUS:
+                self.eat(TokenType.PLUS)
+            elif token.type == TokenType.MINUS:
+                self.eat(TokenType.MINUS)
+
+            # node = BinOp(left=left_node, op=token, right=self.term())
+
+        # return node
+    
+    def term(self):
+        '''term : factor ( (MUL | DIV) factor )*'''
+        node = self.factor()
+
+        while self.current_token.type in (
+                TokenType.MUL,
+                TokenType.INTEGER_DIV,
+                TokenType.FLOAT_DIV,
+        ):
+            token = self.current_token
+            if token.type == TokenType.MUL:
+                self.eat(TokenType.MUL)
+            elif token.type == TokenType.INTEGER_DIV:
+                self.eat(TokenType.INTEGER_DIV)
+            elif token.type == TokenType.FLOAT_DIV:
+                self.eat(TokenType.FLOAT_DIV)
+
+            # node = BinOp(left=node, op=token, right=self.factor())
+
+        # return node
+        
+    def factor(self):
+        '''factor : INTEGER_CONST | LPAREN expr RPAREN | ID | ID LPAREN actual_param RPAREN'''
+        token = self.current_token
+        if token.type == TokenType.INTEGER_CONST:
+            self.eat(TokenType.INTEGER_CONST)
+            # return Num(token)
+        elif token.type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
+            node = self.expr()
+            self.eat(TokenType.RPAREN)
+            return node
+        elif token.type == TokenType.ID:
+            var = self.variable()
+            if self.current_token.type == TokenType.LPAREN:
+                self.eat(TokenType.LPAREN)
+                actual_param = self.actual_param()
+                self.eat(TokenType.RPAREN)
+    
+    def actual_param(self):
+        '''actual_param : expr (COMMA expr)*'''
+        actual_param_list = []
+        expr = self.expr()
+        actual_param_list.append(expr)
+
+        while self.current_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)  
+            expr = self.expr()
+            actual_param_list.append(expr)
+        
     
     def parse(self):
         '''
