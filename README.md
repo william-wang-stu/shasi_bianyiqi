@@ -16,6 +16,18 @@ A simple C-like Interpreter
 - add the detection for double char operation mark  by Truth
 - Lexer Complete !
 
+11.15
+- Add `Parser.py`, `ParserTree.py`, `ParserVisualizer.py`
+- Add `TestASTVisual.py`, `testfile.txt`, `ast.png`
+- Parser Complete !
+
+## Summary
+11.15
+- For starter, plz run `python main.py` or `python TestASTVisual.py testfile.txt > ast.dot && dot -Tpng -o ast.png ast.dot`
+- todos: 
+   - Try more tests
+   - Complement for class ParserError in `Error_Detection.py`
+
 ## References
 Let’s Build A Simple Interpreter from Ruslan
 https://ruslanspivak.com/lsbasi-part1/
