@@ -68,7 +68,18 @@ class ASTVisualizer(NodeVisitor):
         self.ncount += 1
 
     def visit_Program(self, node):
-        s = '  node{} [label="Program:{}"]\n'.format(self.ncount, node.name)
+        s = '  node{} [label="Program"]\n'.format(self.ncount)
+        self.dot_body.append(s)
+        node._num = self.ncount
+        self.ncount += 1
+
+        for child in node.children:
+            self.visit(child)
+            s = '  node{} -> node{}\n'.format(node._num, child._num)
+            self.dot_body.append(s)
+
+    def visit_Function(self, node):
+        s = '  node{} [label="Function:{}"]\n'.format(self.ncount, node.name)
         self.dot_body.append(s)
         node._num = self.ncount
         self.ncount += 1
@@ -218,6 +229,7 @@ class ASTVisualizer(NodeVisitor):
         content = viz.gendot()
         print(content)
         '''
-        tree = self.parser.parse()
+        # tree = self.parser.parse()
+        tree = self.parser.parseProcCall()
         self.visit(tree)
         return ''.join(self.dot_header + self.dot_body + self.dot_footer)

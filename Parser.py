@@ -31,15 +31,52 @@ class Parser:
                 token=self.current_token,
             )
     
+
     def program(self):
-        '''program : type_spec variable LPAREN formal_param_list RPAREN block'''
+        '''
+        program : ( type_spec variable SEMI | type_spec variable LPAREN formal_param_list RPAREN block )+
+
+        '''
+        func_list = []
+
+        while self.current_token.type in (TokenType.INT, TokenType.VOID):
+            type_node = self.type_spec()
+            var_node  = self.variable()
+            if self.current_token.type == TokenType.SEMI:
+                self.eat(TokenType.SEMI)
+                node = VarDecl(var_node, type_node)
+            elif self.current_token.type == TokenType.LPAREN:
+                self.eat(TokenType.LPAREN)
+                program_params = self.formal_param_list()
+                self.eat(TokenType.RPAREN)
+                program_block = self.block()
+                node = Function(
+                    type = type_node,
+                    name = var_node.value,
+                    formal_params = program_params,
+                    block = program_block
+                )
+            func_list.append(node)
+    
+        if not func_list:
+            func_list.append(NoOp())
+
+        root = Program()
+        for func in func_list:
+            root.children.append(func)
+        
+        return root
+
+
+    def function(self):
+        '''function : type_spec variable LPAREN formal_param_list RPAREN block'''
         program_type = self.type_spec()
         program_name = self.variable().value
         self.eat(TokenType.LPAREN)
         program_params = self.formal_param_list()
         self.eat(TokenType.RPAREN)
         program_block = self.block()
-        program_node = Program(
+        program_node = Function(
             type = program_type,
             name = program_name,
             formal_params = program_params,
@@ -362,6 +399,9 @@ class Parser:
             node = self.expr()
             actual_params.append(node)
         
+        if not actual_params:
+            actual_params.append(NoOp())
+        
         self.eat(TokenType.RPAREN)
 
         node = ProcedureCall(
@@ -375,6 +415,63 @@ class Parser:
     def parse(self):
         '''
         program                 : type_spec variable LPAREN formal_param_list RPAREN block
+
+        type_spec               : INT | VOID
+
+        formal_param_list       : formal_param | VOID | EMPTY
+
+        formal_param            : INT ID ( COMMMA INT ID )*
+
+        block                   : LBRACE declarations compound_statement RBRACE
+
+        declarations            : empty | ( variable_declaration SEMI )*
+
+        empty                   :
+
+        variable_declaration    : INT ID
+
+        compound_statement      : ( statement )+
+
+        statement               : assignment_statement | return_statement | while_statement | if_statement
+
+        assignment_statement    : ID ASSIGN expr SEMI
+
+        return_statement        : RETURN ( expr )? SEMI
+
+        while_statement         : WHILE LPAREN expr RPAREN block
+
+        if_statement            : IF LPAREN expr RPAREN block ( ELSE block )?
+
+        expr                    : relop_term ( relop relop_term )*
+
+        relop                   : LT | LTE | LG | LGE | EQUAL | NOT_EQUAL
+
+        relop_term              : term ( (PLUS | MINUS) term )*
+
+        term                    : factor ( (MUL | DIV) factor )*
+
+        factor                  : INTEGER_CONST | LPAREN expr RPAREN | ID | proccall
+
+        proccall                : ID LPAREN ( expr ( COMMA expr )* )? RPAREN
+        
+        variable                : ID
+
+        '''
+        node = self.program()
+        if self.current_token.type != TokenType.EOF:
+            self.error(
+                error_code = ErrorCode.UNEXPECTED_TOKEN,
+                token = self.current_token
+            )
+
+        return node
+    
+
+    def parseProcCall(self):
+        '''
+        program                 : ( type_spec variable SEMI | type_spec variable LPAREN formal_param_list RPAREN block )+
+
+        function                : type_spec variable LPAREN formal_param_list RPAREN block
 
         type_spec               : INT | VOID
 

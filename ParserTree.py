@@ -38,6 +38,11 @@ class Num(AST):
 
 
 class Program(AST):
+    def __init__(self):
+        self.children = []
+
+
+class Function(AST):
     def __init__(self, type, name, formal_params, block):
         '''
         parameter:
