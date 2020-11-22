@@ -21,12 +21,24 @@ A simple C-like Interpreter
 - Add `TestASTVisual.py`, `testfile.txt`, `ast.png`
 - Parser Complete !
 
+11.22
+- Add LexerError and ParserError
+- Add `test_interpreter.py` for unittest
+
 ## Summary
 11.15
-- For starter, plz run `python main.py` or `python TestASTVisual.py testfile.txt > ast.dot && dot -Tpng -o ast.png ast.dot`
+- For starter, plz run `python main.py` or `python Interpreter.py testfile.txt False > ast.dot && dot -Tpng -o ast.png ast.dot`
 - todos: 
    - Try more tests
    - Complement for class ParserError in `Error_Detection.py`
+  
+11.22
+- Complete ParserError
+- Add an arg `debug_mode` for interpreter to enable/disable traceback function in try-catch exception
+- Add testfile `test_interpreter.py` for more interesting tests
+- todos:
+  - Add more tests
+  - GUI
 
 ## References
 Let’s Build A Simple Interpreter from Ruslan
