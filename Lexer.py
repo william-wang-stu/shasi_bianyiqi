@@ -186,6 +186,7 @@ class Lexer:
         token = Token(type=None, value=None, lineno=self.lineno, column=self.column)
 
         value = ''
+        # identifier only includes alpha and num
         while self.current_char is not None and self.current_char.isalnum():
             value += self.current_char
             self.advance()
@@ -251,10 +252,10 @@ class Lexer:
                     # find it!
                     token_type = TokenType(double_char_operation)
                     token = Token(
-                    type=token_type,
-                    value=token_type.value,  
-                    lineno=self.lineno,
-                    column=self.column,
+                        type=token_type,
+                        value=token_type.value,  
+                        lineno=self.lineno,
+                        column=self.column,
                     )
                     # do a double advance
                     self.advance()
@@ -284,13 +285,3 @@ class Lexer:
         # EOF (end-of-file) token indicates that there is no more
         # input left for lexical analysis
         return Token(type=TokenType.EOF, value=None)
-
-class Interpreter(object):
-    def __init__(self, lexer):
-        self.lexer = lexer
-        # set current token to the first token taken from the input
-        self.current_token = self.lexer.get_next_token()
-    
-    def eat(self):
-        self.current_token = self.lexer.get_next_token()
-

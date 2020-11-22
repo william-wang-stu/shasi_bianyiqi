@@ -13,6 +13,8 @@ class Error(Exception):
         self.token = token
         # add exception class name before the message
         self.message = f'{self.__class__.__name__}: {message}'
+    def __str__(self):
+        return self.message
 
 class LexerError(Error):
     pass

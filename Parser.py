@@ -37,16 +37,29 @@ class Parser:
         program : ( type_spec variable SEMI | type_spec variable LPAREN formal_param_list RPAREN block )+
 
         '''
+        '''
+        within this grammar-rule, we only include var-declaration
+        int a;
+        and func-declaration
+        int func()
+        {
+        }
+        '''
+        
         func_list = []
-
+        
+        # restrict return-type to be INT or VOID
         while self.current_token.type in (TokenType.INT, TokenType.VOID):
             type_node = self.type_spec()
             var_node  = self.variable()
+            # int a;
             if self.current_token.type == TokenType.SEMI:
                 self.eat(TokenType.SEMI)
                 node = VarDecl(var_node, type_node)
+            # int func() { <block> }
             elif self.current_token.type == TokenType.LPAREN:
                 self.eat(TokenType.LPAREN)
+                # fetch param-list of the function
                 program_params = self.formal_param_list()
                 self.eat(TokenType.RPAREN)
                 program_block = self.block()
@@ -146,6 +159,14 @@ class Parser:
         '''declarations : empty | ( variable_declaration SEMI )*'''
         declaration_list = []
 
+        '''
+        within this grammar-rule, we can only define something like,
+        int a;
+        instead of
+        int a,b;
+        '''
+
+        # INT is the only available type in this interpreter
         while self.current_token.type == TokenType.INT:
             variable_declaration = self.variable_declaration()
             declaration_list.append(variable_declaration)
@@ -382,7 +403,7 @@ class Parser:
         return node
     
     def proccall(self):
-        '''actual_param : ID LPAREN ( expr ( COMMA expr )* )? RPAREN'''
+        '''proccall : ID LPAREN ( expr ( COMMA expr )* )? RPAREN'''
         token = self.current_token
         proc_name = token.value
 
@@ -390,10 +411,14 @@ class Parser:
         self.eat(TokenType.LPAREN)
 
         actual_params = []
+        
+        # func()
+        # func(4)
         if self.current_token.type != TokenType.RPAREN:
             node = self.expr()
             actual_params.append(node)
         
+        # func(a,b,4*5)
         while self.current_token.type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
             node = self.expr()
