@@ -7,16 +7,29 @@ class Parser:
         self.lexer = lexer
         # set current token to the first token taken from the input
         self.current_token = self.get_next_token()
+        # log errors to be used in UI
+        self.err_list = []
 
     def get_next_token(self):
         return self.lexer.get_next_token()
 
+    def getErrList(self):
+        return self.err_list
+
     def error(self, error_code, token):
+        '''
         raise ParserError(
             error_code=error_code,
             token=token,
             message=f'{error_code.value} -> {token}',
         )
+        '''
+        parserErr = ParserError(
+            error_code=error_code,
+            token=token,
+            message=f'{error_code.value} -> {token}',
+        )
+        self.err_list.append(parserErr)
 
     def eat(self, token_type):
         # compare the current token type with the passed token

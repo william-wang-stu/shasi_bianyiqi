@@ -114,6 +114,11 @@ class Lexer:
         # token line number and column number
         self.lineno = 1
         self.column = 1
+        # log errors to be used in UI
+        self.err_list = []
+    
+    def getErrList(self):
+        return self.err_list
 
     def error(self):
         s = "Lexer error on '{lexeme}' line: {lineno} column: {column}".format(
@@ -121,7 +126,9 @@ class Lexer:
             lineno=self.lineno,
             column=self.column,
         )
-        raise LexerError(message=s)
+        # raise LexerError(message=s)
+        lexerErr = LexerError(message=s)
+        self.err_list.append(lexerErr)
 
     def advance(self):
         """Advance the `pos` pointer and set the `current_char` variable."""
@@ -268,9 +275,17 @@ class Lexer:
                 # get enum member by value, e.g.
                 # TokenType(';') --> TokenType.SEMI
                 token_type = TokenType(self.current_char)
-            except ValueError:
+            except ValueError as e:
+                self.err_list.append(e)
                 # no enum member with value equal to self.current_char
                 self.error()
+                # return None Token
+                return Token(
+                    type=None,
+                    value=None,
+                    lineno=self.lineno,
+                    column=self.column,
+                )
             else:
                 # create a token with a single-character lexeme as its value
                 token = Token(
