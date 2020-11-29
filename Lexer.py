@@ -120,6 +120,23 @@ class Lexer:
     def getErrList(self):
         return self.err_list
 
+    def get_all_tokens(self):
+        '''
+        return a tuple <isEOF, token-list>
+            isEOF: true if there is no lexer error,
+            and we traverse to the end of the procedure
+
+            token-list: a list of tokens corresponding to the procedure
+        '''
+        token_list = []
+        token = self.get_next_token()
+        while token.type != TokenType.EOF:
+            token = self.get_next_token()
+            token_list.append(token)
+            if token.type == None:    
+                break
+        return (token.type != None, token_list)
+
     def error(self):
         s = "Lexer error on '{lexeme}' line: {lineno} column: {column}".format(
             lexeme=self.current_char,

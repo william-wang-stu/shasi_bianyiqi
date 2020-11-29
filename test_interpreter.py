@@ -45,6 +45,30 @@ class LexerTestCase(unittest.TestCase):
         
             for Err, assertErr in zip(lexer.getErrList(), err):
                 self.assertEqual(Err.__str__(), assertErr)
+    
+    def test_getalltokens(self):
+        from Lexer import Token, TokenType
+        text, assertTokenList = (
+            '''
+            void main(void)
+            {
+                %
+            }
+            ''',
+            [
+                Token(TokenType.ID, 'main', lineno=2,column=18),
+                Token(TokenType.LPAREN, '(', lineno=2,column=22),
+                Token(TokenType.VOID, 'VOID', lineno=2,column=23),
+                Token(TokenType.RPAREN, ')', lineno=2,column=27),
+                Token(TokenType.LBRACE, '{', lineno=3,column=13),
+                Token(None, None, lineno=None,column=None)
+            ]
+        )
+        lexer = self.buildLexer(text)
+        RetValue, token_list = lexer.get_all_tokens()
+        self.assertFalse(RetValue)
+        for token, assertToken in zip(token_list, assertTokenList):
+            self.assertEqual(token.type, assertToken.type)
 
     def disabled_test_notation_removal(self):
         testcase = [
