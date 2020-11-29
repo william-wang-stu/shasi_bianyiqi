@@ -130,12 +130,13 @@ class Lexer:
         '''
         token_list = []
         token = self.get_next_token()
+        flag = True
         while token.type != TokenType.EOF:
             token = self.get_next_token()
             token_list.append(token)
-            if token.type == None:    
-                break
-        return (token.type != None, token_list)
+            if token.type == None:
+                flag = False
+        return (flag, token_list)
 
     def error(self):
         s = "Lexer error on '{lexeme}' line: {lineno} column: {column}".format(
@@ -145,7 +146,8 @@ class Lexer:
         )
         # raise LexerError(message=s)
         lexerErr = LexerError(message=s)
-        self.err_list.append(lexerErr)
+        # self.err_list.append(lexerErr)
+        self.err_list.append(s)
 
     def advance(self):
         """Advance the `pos` pointer and set the `current_char` variable."""
@@ -297,6 +299,7 @@ class Lexer:
                 # no enum member with value equal to self.current_char
                 self.error()
                 # return None Token
+                self.advance()
                 return Token(
                     type=None,
                     value=None,
