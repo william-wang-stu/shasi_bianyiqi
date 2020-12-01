@@ -179,6 +179,18 @@ class ParserTestCase(unittest.TestCase):
                     'ParserError: Unexpected token -> Token(TokenType.INT, \'INT\', position=3:17)',
                     'ParserError: Unexpected token -> Token(TokenType.EOF, None, position=None:None)'
                 ]
+            ),
+            (
+                '''
+                int a;
+                int b;
+                int program (int a, int b, int c)
+                {
+                    int i;
+                    i=;
+                }
+                ''',
+                ['ParserError: Unexpected token -> Token(TokenType.SEMI, \';\', position=7:23)']
             )
         ]
 

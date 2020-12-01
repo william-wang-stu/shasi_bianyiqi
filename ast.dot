@@ -180,4 +180,74 @@ digraph astgraph {
   node77 -> node80
   node72 -> node77
   node1 -> node72
+  node90 [label="Function:main"]
+  node91 [label="VOID"]
+  node90 -> node91
+  node92 [label="Param"]
+  node93 [label="VOID"]
+  node92 -> node93
+  node94 [label="VOID"]
+  node92 -> node94
+  node90 -> node92
+  node95 [label="Block"]
+  node96 [label="Declr"]
+  node97 [label="VarDecl"]
+  node98 [label="a"]
+  node97 -> node98
+  node99 [label="INT"]
+  node97 -> node99
+  node96 -> node97
+  node100 [label="VarDecl"]
+  node101 [label="b"]
+  node100 -> node101
+  node102 [label="INT"]
+  node100 -> node102
+  node96 -> node100
+  node103 [label="VarDecl"]
+  node104 [label="c"]
+  node103 -> node104
+  node105 [label="INT"]
+  node103 -> node105
+  node96 -> node103
+  node95 -> node96
+  node106 [label="Compound"]
+  node107 [label="="]
+  node108 [label="a"]
+  node109 [label="3"]
+  node107 -> node108
+  node107 -> node109
+  node106 -> node107
+  node110 [label="="]
+  node111 [label="b"]
+  node112 [label="4"]
+  node110 -> node111
+  node110 -> node112
+  node106 -> node110
+  node113 [label="="]
+  node114 [label="c"]
+  node115 [label="2"]
+  node113 -> node114
+  node113 -> node115
+  node106 -> node113
+  node116 [label="="]
+  node117 [label="a"]
+  node118 [label="ProcCall:program"]
+  node119 [label="a"]
+  node118 -> node119
+  node120 [label="b"]
+  node118 -> node120
+  node121 [label="ProcCall:demo"]
+  node122 [label="c"]
+  node121 -> node122
+  node118 -> node121
+  node116 -> node117
+  node116 -> node118
+  node106 -> node116
+  node123 [label="RETURN"]
+  node124 [label="i"]
+  node123 -> node124
+  node106 -> node123
+  node95 -> node106
+  node90 -> node95
+  node1 -> node90
 }

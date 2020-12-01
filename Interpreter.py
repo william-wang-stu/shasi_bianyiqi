@@ -33,3 +33,6 @@ if __name__ == '__main__':
     viz = ASTVisualizer(parser)
     content = viz.gendot()
     print(content)
+
+    for err in parser.getErrList():
+        print(err.__str__())
