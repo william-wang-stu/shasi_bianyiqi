@@ -82,6 +82,12 @@ class Parser:
                     formal_params = program_params,
                     block = program_block
                 )
+            else:
+                node = NoOp()
+                self.error(
+                    error_code=ErrorCode.UNEXPECTED_TOKEN,
+                    token=self.current_token
+                )
             func_list.append(node)
     
         if not func_list:
@@ -412,7 +418,7 @@ class Parser:
         elif token.type == TokenType.ID:
             node = self.variable()
         else:
-            node = empty()
+            node = self.empty()
         return node
     
     def proccall(self):

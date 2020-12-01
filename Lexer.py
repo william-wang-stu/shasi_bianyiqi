@@ -130,6 +130,7 @@ class Lexer:
         '''
         token_list = []
         token = self.get_next_token()
+        token_list.append(token)
         flag = True
         while token.type != TokenType.EOF:
             token = self.get_next_token()
