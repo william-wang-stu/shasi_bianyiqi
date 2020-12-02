@@ -55,7 +55,7 @@ digraph astgraph {
   node27 [label="Compound"]
   node28 [label="="]
   node29 [label="i"]
-  node30 [label="0"]
+  node30 [label="NoOp"]
   node28 -> node29
   node28 -> node30
   node27 -> node28
@@ -244,10 +244,11 @@ digraph astgraph {
   node116 -> node118
   node106 -> node116
   node123 [label="RETURN"]
-  node124 [label="i"]
+  node124 [label="NoOp"]
   node123 -> node124
   node106 -> node123
   node95 -> node106
   node90 -> node95
   node1 -> node90
 }
+ParserError: Unexpected token -> Token(TokenType.SEMI, ';', position=7:4)

@@ -17,7 +17,7 @@ class Parser:
         return self.err_list
 
     def error(self, error_code, token):
-        
+        '''
         raise ParserError(
             error_code=error_code,
             token=token,
@@ -30,7 +30,6 @@ class Parser:
             message=f'{error_code.value} -> {token}',
         )
         self.err_list.append(parserErr)
-        '''
 
     def eat(self, token_type):
         # compare the current token type with the passed token
