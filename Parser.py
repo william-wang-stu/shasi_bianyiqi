@@ -96,7 +96,7 @@ class Parser:
         root = Program()
         for func in func_list:
             root.children.append(func)
-        
+
         return root
 
 
