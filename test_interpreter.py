@@ -46,7 +46,7 @@ class LexerTestCase(unittest.TestCase):
             for Err, assertErr in zip(lexer.getErrList(), err):
                 self.assertEqual(Err.__str__(), assertErr)
     
-    def disabled_test_getalltokens(self):
+    def test_getalltokens(self):
         from Lexer import Token, TokenType
         text, assertTokenList = (
             '''
@@ -56,6 +56,7 @@ class LexerTestCase(unittest.TestCase):
             }
             ''',
             [
+                Token(TokenType.VOID,'VOID',lineno=2,column=14),
                 Token(TokenType.ID, 'main', lineno=2,column=18),
                 Token(TokenType.LPAREN, '(', lineno=2,column=22),
                 Token(TokenType.VOID, 'VOID', lineno=2,column=23),
@@ -166,7 +167,7 @@ class ParserTestCase(unittest.TestCase):
             for err, assertErr in zip(interpreter.getErrList(), err):
                 self.assertEqual(err.__str__(), assertErr)
 
-    def test_parsererr(self):
+    def disabled_test_parsererr(self):
         testcase = [
             (
                 '''

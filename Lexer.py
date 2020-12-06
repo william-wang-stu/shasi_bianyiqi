@@ -61,13 +61,13 @@ class Token:
         self.column = column
 
     def __str__(self):
-        """
+        '''
         String representation of the class instance.
 
         Example:
             Input-token:   Token(TokenType.INTEGER, 7, lineno=5, column=10)
             Output-format: Token(TokenType.INTEGER, 7, position=5:10)
-        """
+        '''
         return 'Token({type}, {value}, position={lineno}:{column})'.format(
             type=self.type,
             value=repr(self.value),
@@ -79,19 +79,18 @@ class Token:
         return self.__str__()
 
 def _build_reserved_keywords():
-    """
-    关键字字典: TokenType中的所有关键字部分, 从INT开始, 到RETURN结束
-
+    '''
+    function: keep all reserved-keywords
     Result:
-        {'PROGRAM': <TokenType.PROGRAM: 'PROGRAM'>,
-         'INTEGER': <TokenType.INTEGER: 'INTEGER'>,
-         'REAL': <TokenType.REAL: 'REAL'>,
-         'DIV': <TokenType.INTEGER_DIV: 'DIV'>,
-         'VAR': <TokenType.VAR: 'VAR'>,
-         'PROCEDURE': <TokenType.PROCEDURE: 'PROCEDURE'>,
-         'BEGIN': <TokenType.BEGIN: 'BEGIN'>,
-         'END': <TokenType.END: 'END'>}
-    """
+        {
+            'INT': <TokenType.INT: 'INT'>,
+            'VOID': <TokenType.VOID: 'VOID'>,
+            'IF': <TokenType.IF: 'IF'>,
+            'ELSE': <TokenType.ELSE: 'ELSE'>,
+            'WHILE': <TokenType.WHILE: 'WHILE'>,
+            'RETURN': <TokenType.RETURN: 'RETURN'>
+        }
+    '''
     # enumerations support iteration, in definition order
     tokentype_list = list(TokenType)
     start_index = tokentype_list.index(TokenType.INT)
@@ -106,15 +105,15 @@ RESERVED_KEYWORDS = _build_reserved_keywords()
 
 class Lexer:
     def __init__(self, text):
-        # client string input"
+        # input string
         self.text = text
-        # self.pos is an index into self.text
+        # index to self.text
         self.pos = 0
         self.current_char = self.text[self.pos]
         # token line number and column number
         self.lineno = 1
         self.column = 1
-        # log errors to be used in UI
+        # log errors used in UI
         self.err_list = []
     
     def getErrList(self):
@@ -151,14 +150,14 @@ class Lexer:
         self.err_list.append(s)
 
     def advance(self):
-        """Advance the `pos` pointer and set the `current_char` variable."""
+        '''Advance `pos` pointer and set `current_char`'''
         if self.current_char == '\n':
             self.lineno += 1
             self.column = 0
 
         self.pos += 1
         if self.pos > len(self.text) - 1:
-            self.current_char = None  # Indicates end of input
+            self.current_char = None  # end of input
         else:
             self.current_char = self.text[self.pos]
             self.column += 1
@@ -175,12 +174,14 @@ class Lexer:
             self.advance()
 
     def skip_comment(self):
-        while self.current_char != '}':
-            self.advance()
-        self.advance()  # the closing curly brace
+        pass
 
     def number(self):
-        """Return a (multidigit) integer or float consumed from the input."""
+        '''
+        return integer or real number
+        number: (digit)+
+        digit:  self.current_char.isdigit()
+        '''
 
         # Create a new token with current line and column number
         token = Token(type=None, value=None, lineno=self.lineno, column=self.column)
@@ -207,7 +208,7 @@ class Lexer:
         return token
 
     def _id(self):
-        """Handle identifiers and reserved keywords"""
+        '''Handle identifiers and reserved keywords'''
 
         # Create a new token with current line and column number
         token = Token(type=None, value=None, lineno=self.lineno, column=self.column)
@@ -230,22 +231,17 @@ class Lexer:
         return token
 
     def get_next_token(self):
-        """
-        Lexical analyzer (also known as scanner or tokenizer)
-
-        This method is responsible for breaking a sentence
-        apart into tokens. One token at a time.
-        """
+        '''
+        function: break self.text into different tokens, and fetch one token once at a time
+        '''
         while self.current_char is not None:
             if self.current_char.isspace():
                 self.skip_whitespace()
                 continue
             
             '''
-            if self.current_char == '{':
-                self.advance()
-                self.skip_comment()
-                continue
+            pre-process comment in self.text
+                self.comment()
             '''
 
             if self.current_char.isalpha():
@@ -254,18 +250,7 @@ class Lexer:
             if self.current_char.isdigit():
                 return self.number()
 
-            if self.current_char == ':' and self.peek() == '=':
-                token = Token(
-                    type=TokenType.ASSIGN,
-                    value=TokenType.ASSIGN.value,  # ':='
-                    lineno=self.lineno,
-                    column=self.column,
-                )
-                self.advance()
-                self.advance()
-                return token
-
-            # double-character operation token  ADDED BY TRUTH
+            # double-character operation token
             if self.current_char == "<" or self.current_char == ">" or self.current_char == "!" or self.current_char == "=":
                 if self.peek() == '=':
                     '''
