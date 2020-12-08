@@ -71,6 +71,7 @@ class LexerTestCase(unittest.TestCase):
         RetValue, token_list = lexer.get_all_tokens()
         self.assertFalse(RetValue)
         for token, assertToken in zip(token_list, assertTokenList):
+            # print(token)
             self.assertEqual(token.type, assertToken.type)
 
     def disabled_test_notation_removal(self):

@@ -52,9 +52,9 @@ class Parser:
         '''
         '''
         within this grammar-rule, we only include var-declaration
-        int a;
+        i.e. int a;
         and func-declaration
-        int func()
+        i.e. int func()
         {
         }
         '''
@@ -180,9 +180,9 @@ class Parser:
 
         '''
         within this grammar-rule, we can only define something like,
-        int a;
+        i.e. int a;
         instead of
-        int a,b;
+        i.e. int a,b;
         '''
 
         # INT is the only available type in this interpreter
