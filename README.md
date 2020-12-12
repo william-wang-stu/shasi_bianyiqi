@@ -25,6 +25,10 @@ A simple C-like Interpreter
 - Add LexerError and ParserError
 - Add `test_interpreter.py` for unittest
 
+12.12
+- Add Semantic-Analyzer in `intermediate_code.py`: convert AST to three-address-code
+- Add simple demo in `test.py` for Semantic-Analyzer
+
 ## Summary
 11.15
 - For starter, plz run `python main.py` or `python Interpreter.py testfile.txt False > ast.dot && dot -Tpng -o ast.png ast.dot`
