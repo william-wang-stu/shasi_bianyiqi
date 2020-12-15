@@ -1,9 +1,9 @@
 from Parser import NodeVisitor
 
-#cur line number
-cur_line = 100 - 1 
+# cur line number
+cur_lineno = 100 - 1
 
-#to record all functions declared in Program 
+# record all functions declared in Program 
 class function_tbl_entry:
     def __init__(self,name,func_type):
         self.name = name
@@ -12,7 +12,6 @@ class function_tbl_entry:
 
 function_tbl = []
 
-
 class ThreeAddressCode:
     def __init__(self, left=None, right=None, op=None, result=None):
         self.left = left
@@ -20,11 +19,11 @@ class ThreeAddressCode:
         self.op = op
         self.result = result
     def __str__(self):
-        global cur_line
-        cur_line = cur_line + 1
+        global cur_lineno
+        cur_lineno = cur_lineno + 1
         if self.left is None:
-            return f'{cur_line} : ( {self.op:>5},  NoOp,  {self.right:>5}, {self.result:>5})'
-        return f'{cur_line} : ( {self.op:>5}, {self.left:>5},  {self.right:>5},{self.result:>5})'
+            return f'{cur_lineno} : ( {self.op:>5},  NoOp,  {self.right:>5}, {self.result:>5})'
+        return f'{cur_lineno} : ( {self.op:>5}, {self.left:>5},  {self.right:>5},{self.result:>5})'
 
 class JumpBlockCode:
     def __init__(self, code):
@@ -41,14 +40,13 @@ class IRGenerator(NodeVisitor):
     def __init__(self, parser):
         super().__init__()
         self.parser = parser
+        # a list of three-address-code
         self.code = []
-        self.retaddr = None
-        #record the return value in the declr of functions
-        self.cur_func = None
-
+        # record current function name in proccall
+        self.cur_funcname = None
+        # count for self.newtemp()
         self._tempcount = 0
         self._signcount = 0
-        self._funccount = 0
 
     def newtemp(self, type):
         '''
@@ -107,24 +105,22 @@ class IRGenerator(NodeVisitor):
 
     def visit_Function(self, node):
         '''
-        add function declarations
-        FUNC (PARMAS) BLOCK
-        '''
-        # print(f'...encounter Function: {node.name} ...')
-        # record the function and reset the num of temp reg for return value  
-        self.cur_func = node.name
-        
-        # add a startAddr for func
+        function declaration
+        '''   
         beginAddressSign = JumpBlockCode(code = f'{node.name}:')
         self.code.append(beginAddressSign)
 
-        #need to check if error
+        # record the function name in self.cure_funcname
+        self.cur_funcname = node.name
+        # print(f'...encounter Function: {node.name} ...')
+
+        # add function into the global tbl
         function_tbl.append(function_tbl_entry(node.name, node.type))
 
+        # visit
         self.visit(node.type)
         for param_node in node.formal_params:
             self.visit(param_node)
-
         self.visit(node.block)
     
     def visit_Block(self, node):
@@ -153,26 +149,11 @@ class IRGenerator(NodeVisitor):
         return leftAddress
 
     def visit_Return(self, node):
-        '''
-        For return value in function delclarations
-        save the return val in a temp reg named {self.function}
-        '''
-        # the final reg addr of expr
+        # gen newtemp for expr in return-statement
         resultAddr = self.visit(node.expr)
-
-        if self.retaddr is not None:
-            callFuncRet = ThreeAddressCode(
-                                op = 'j',
-                                left= '-',
-                                right = '-',
-                                result = self.retaddr
-                            )#JumpBlockCode(code = f'goto {self.retaddr}')
-            
-            self.retaddr = None
-
         if resultAddr is not None:
-            # temp reg for return value 
-            resultAddress = self.newtemp(self.cur_func)
+            # gen newtemp
+            resultAddress = self.newtemp(self.cur_funcname)
             # assign the return value from a shared reg(in the func declr) to real value in the Program 
             return_instr = ThreeAddressCode(
                 right = resultAddr,
@@ -180,8 +161,7 @@ class IRGenerator(NodeVisitor):
                 result = resultAddress
             )
             self.code.append(return_instr)
-        
-         
+    
     def visit_While(self, node):
         # gen new temp
         beginAddress = self.newtemp('jmp')
@@ -191,33 +171,34 @@ class IRGenerator(NodeVisitor):
         beginAddressSign = JumpBlockCode(code = f'{beginAddress}:')
         self.code.append(beginAddressSign)
 
-        # E.place - iteration for expr  
+        # E.place
         exprAddress = self.visit(node.expr)
 
+        # JumpBlockCode(code = f'if {exprAddress} = 0 goto {nextAddress}')
         while_instr = ThreeAddressCode(
-                                op = 'jz',
-                                left= exprAddress,
-                                right = '-',
-                                result = nextAddress
-                            ) # JumpBlockCode(code = f'if {exprAddress} = 0 goto {nextAddress}')
-                    
-                        
+            op = 'jz',
+            left = exprAddress,
+            right = '-',
+            result = nextAddress
+        )              
         self.code.append(while_instr)
 
-        # iteration for block 
+        # visit block
         self.visit(node.block)
 
+        # After Visit Block
+        # JumpBlockCode(code = f'goto {beginAddress}')
         jumpBackBlock = ThreeAddressCode(
-                                op = 'j',
-                                left= '-',
-                                right = '-',
-                                result = beginAddress
-                            )#JumpBlockCode(code = f'goto {beginAddress}')
-        
+            op = 'j',
+            left = '-',
+            right = '-',
+            result = beginAddress
+        )
         self.code.append(jumpBackBlock)
+
+        # sign for the next statement after while-loop
         nextAddressSign = JumpBlockCode(code = f'{nextAddress}:')
         self.code.append(nextAddressSign)
-
 
     def visit_If(self, node):
         # E.place
@@ -227,27 +208,26 @@ class IRGenerator(NodeVisitor):
         if type(node.else_block).__name__ != 'NoOp':
             falseAddress = self.newtemp('jmp')
         nextAddress = self.newtemp('nxt')
+
         # i.e. if expr = 1 goto trueAddress
-        
-        if_instr = ThreeAddressCode(
-                                op = 'jnz',
-                                left= exprAddress,
-                                right = '-',
-                                result = trueAddress
-                            ) 
         # JumpBlockCode(code = f'if {exprAddress} = 1 goto {trueAddress}')
+        if_instr = ThreeAddressCode(
+            op = 'jnz',
+            left = exprAddress,
+            right = '-',
+            result = trueAddress
+        )
         self.code.append(if_instr)
+
         # i.e. goto falseAddress
         if type(node.else_block).__name__ != 'NoOp':
-            #falseAddressSign = JumpBlockCode(code = f'goto {falseAddress}')
-
+            # falseAddressSign = JumpBlockCode(code = f'goto {falseAddress}')
             else_instr = ThreeAddressCode(
-                                op = 'j',
-                                left= '-',
-                                right = '-',
-                                result = falseAddress
-                            )
-
+                op = 'j',
+                left = '-',
+                right = '-',
+                result = falseAddress
+            )
             self.code.append(else_instr)
         
         '''
@@ -258,13 +238,13 @@ class IRGenerator(NodeVisitor):
         trueAddressSign = JumpBlockCode(code = f'{trueAddress}:')
         self.code.append(trueAddressSign)
         self.visit(node.if_block)
+        # JumpBlockCode(code = f'goto {nextAddress}')
         jumpAfterBlock = ThreeAddressCode(
-                                op = 'j',
-                                left= '-',
-                                right = '-',
-                                result = nextAddress
-                            )#JumpBlockCode(code = f'goto {nextAddress}')
-
+            op = 'j',
+            left = '-',
+            right = '-',
+            result = nextAddress
+        )
         self.code.append(jumpAfterBlock)
 
         # else-block
@@ -283,47 +263,47 @@ class IRGenerator(NodeVisitor):
     def visit_ProcedureCall(self, node):
         global function_tbl
 
-        # add parms before the call
-        # i.e.
+        # gen sth like this, i.e.
         # Param a
         # Param b
         # Param c
         # call demo
+
+        # list actual-params
         for param_node in node.actual_params:
             node_value = self.visit(param_node)
             self.code.append(f'Param {node_value}')
-        
-        # call the func
+
+        # call func
         proccall = JumpBlockCode(code = f'call {node.name}')
         self.code.append(proccall)
         
-        # get a temp reg for the procedureCall
-        temp_name = node.name+"_tmp"
+        # HERE we gen an extra 3AC, ' newtemp := ret value of cur function '
+        # i.e. (     =,  NoOp,  demo_tmp, demo_tmp_0)
+        funcname_temp = self.newtemp(node.name)
 
-        # check if the function has a return value 
-        for entry in function_tbl: # we assume that there is no overload for function! 
+        # P.S. RULES:
+        #   we assume that function isn't overloaded
+        #   we have to define func first before we can use it
+        for entry in function_tbl:
+            # first, look up current function in tbl
             if entry.name == node.name:
                 if entry.func_type != 'VOID':
-                    # temp reg for return value 
-                    temp_reg = "%s_%d" % (temp_name, entry.return_num)
+                    # gen temp for ret value
+                    retvalue_temp = "%s_%d" % (funcname_temp, entry.return_num)
                     entry.return_num += 1
-                    # assign the value from a shared reg(in the func declr) to real value in the Program 
-                    # i.e. (     =,  NoOp,  demo_tmp, demo_tmp_0)
-                    return_instr = ThreeAddressCode(
-                        right = temp_name,
-                        op = '=',
-                        result = temp_reg
-                    )
-                    
-                    self.code.append(return_instr)
 
-                    self.retaddr = temp_reg
+                    return_instr = ThreeAddressCode(
+                        right = funcname_temp,
+                        op = '=',
+                        result = retvalue_temp
+                    )
+                    self.code.append(return_instr)
                 break
-        # factor : proccall (parser)
-        # save node.place in return value
-        return self.retaddr
+        # since 'factor -> proccall' in parser's rule,
+        # so we should save node.place in return value
+        return retvalue_temp
 
     def genCodeSeq(self):
         astTree = self.parser.parseProcCall()
         self.visit(astTree)
-

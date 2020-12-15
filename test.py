@@ -1,7 +1,7 @@
 from Lexer import TokenType, Lexer
 from notation_removal import notation_removal
 from Parser import Parser
-from internediate_code import IRGenerator
+from IntermediateCodeGenerator import IRGenerator
 
 from ParserVisualizer import ASTVisualizer
 if __name__ == '__main__':
