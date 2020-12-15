@@ -50,9 +50,9 @@ class Function(AST):
         '''
         parameter:
             type:           INT or VOID
-            name:   
+            name:
             formal_params:  list of formal params
-            block:   
+            block:
         '''
         self.type = type
         self.name = name

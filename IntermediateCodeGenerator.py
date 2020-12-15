@@ -3,7 +3,7 @@ from Parser import NodeVisitor
 # cur line number
 cur_lineno = 100 - 1
 
-# record all functions declared in Program 
+# record all functions declared in Program
 class function_tbl_entry:
     def __init__(self,name,func_type):
         self.name = name
@@ -42,6 +42,8 @@ class IRGenerator(NodeVisitor):
         self.parser = parser
         # a list of three-address-code
         self.code = []
+        prompt = 'Three-Address-Code List'
+        self.code.append(prompt + '\n' + '-' * len(prompt))
         # record current function name in proccall
         self.cur_funcname = None
         # count for self.newtemp()
@@ -106,7 +108,7 @@ class IRGenerator(NodeVisitor):
     def visit_Function(self, node):
         '''
         function declaration
-        '''   
+        '''
         beginAddressSign = JumpBlockCode(code = f'{node.name}:')
         self.code.append(beginAddressSign)
 
@@ -122,7 +124,7 @@ class IRGenerator(NodeVisitor):
         for param_node in node.formal_params:
             self.visit(param_node)
         self.visit(node.block)
-    
+
     def visit_Block(self, node):
         self.visit(node.declarations)
         self.visit(node.compound_statement)
@@ -161,7 +163,7 @@ class IRGenerator(NodeVisitor):
                 result = resultAddress
             )
             self.code.append(return_instr)
-    
+
     def visit_While(self, node):
         # gen new temp
         beginAddress = self.newtemp('jmp')
@@ -180,7 +182,7 @@ class IRGenerator(NodeVisitor):
             left = exprAddress,
             right = '-',
             result = nextAddress
-        )              
+        )
         self.code.append(while_instr)
 
         # visit block
@@ -229,7 +231,7 @@ class IRGenerator(NodeVisitor):
                 result = falseAddress
             )
             self.code.append(else_instr)
-        
+
         '''
         ( if-block )
         trueAddressSign: { if-block }
@@ -252,7 +254,7 @@ class IRGenerator(NodeVisitor):
             falseAddressSign = JumpBlockCode(code = f'{falseAddress}:')
             self.code.append(falseAddressSign)
             self.visit(node.else_block)
-        
+
         # next Address Sign
         nextAddressSign = JumpBlockCode(code = f'{nextAddress}:')
         self.code.append(nextAddressSign)
@@ -277,7 +279,7 @@ class IRGenerator(NodeVisitor):
         # call func
         proccall = JumpBlockCode(code = f'call {node.name}')
         self.code.append(proccall)
-        
+
         # HERE we gen an extra 3AC, ' newtemp := ret value of cur function '
         # i.e. (     =,  NoOp,  demo_tmp, demo_tmp_0)
         funcname_temp = self.newtemp(node.name)

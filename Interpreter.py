@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     if args.debug_mode == 'False':
         sys.tracebacklimit = 0
-    
+
     lexer = Lexer(text)
     parser = Parser(lexer)
     viz = ASTVisualizer(parser)

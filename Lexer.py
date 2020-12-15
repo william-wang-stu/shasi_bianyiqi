@@ -13,7 +13,7 @@ class TokenType(Enum):
 
     # 标识符
     ID = 'ID'
-    
+
     # 数值
     INTEGER_CONST = 'INTEGER_CONST'
     REAL_CONST = 'REAL_CONST'

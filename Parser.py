@@ -559,12 +559,12 @@ class Parser:
         factor                  : INTEGER_CONST | LPAREN expr RPAREN | ID | proccall
 
         proccall                : ID LPAREN ( expr ( COMMA expr )* )? RPAREN
-        
+
         variable                : ID
 
         '''
         node = self.program()
-        
+
         if self.current_token.type != TokenType.EOF:
             self.error(
                 error_code = ErrorCode.UNEXPECTED_TOKEN,
@@ -572,7 +572,7 @@ class Parser:
             )
 
         return node
-    
+
 
 ### AST Visitor
 class NodeVisitor:
