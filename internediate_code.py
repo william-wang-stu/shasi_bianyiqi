@@ -32,8 +32,6 @@ class JumpBlockCode:
     def __str__(self):
         return f'{self.code}'
 
-# todo: if, while, return, proccall
-
 class IRGenerator(NodeVisitor):
     '''
     Intermediate Representation Generator
@@ -283,13 +281,9 @@ class IRGenerator(NodeVisitor):
         pass
 
     def visit_ProcedureCall(self, node):
-        '''
-        
-        '''
-        #print(f'...encounter procedure call: {node.name} ...')
         global function_tbl
 
-        #add parms before the call
+        # add parms before the call
         # i.e.
         # Param a
         # Param b

@@ -48,8 +48,6 @@ class Parser:
     def program(self):
         '''
         program : ( type_spec variable SEMI | type_spec variable LPAREN formal_param_list RPAREN block )+
-
-        
         '''
         '''
         within this grammar-rule, we only include var-declaration
@@ -61,6 +59,7 @@ class Parser:
         '''
         
         func_list = []
+
         # restrict return-type to be INT or VOID
         while self.current_token.type in (TokenType.INT, TokenType.VOID):
             type_node = self.type_spec()
@@ -89,7 +88,6 @@ class Parser:
                     token=self.current_token
                 )
             func_list.append(node)
-
 
         if not func_list:
             func_list.append(NoOp())
@@ -166,10 +164,8 @@ class Parser:
     def block(self):
         '''block : LBRACE declarations compound_statement RBRACE'''
         self.eat(TokenType.LBRACE)
-        # 
         declarations = self.declarations()
         compound_statement = self.compound_statement()
-
         self.eat(TokenType.RBRACE)
         block_node = Block(
             declarations = declarations,
@@ -583,7 +579,6 @@ class NodeVisitor:
     def visit(self, node):
         method_name = 'visit_' + type(node).__name__
         visitor = getattr(self, method_name, self.generic_visit)
-        #print("--{}".format(type(node).__name__))
         return visitor(node)
 
     def generic_visit(self, node):
