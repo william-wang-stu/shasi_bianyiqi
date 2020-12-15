@@ -49,6 +49,7 @@ class Parser:
         '''
         program : ( type_spec variable SEMI | type_spec variable LPAREN formal_param_list RPAREN block )+
 
+        
         '''
         '''
         within this grammar-rule, we only include var-declaration
@@ -60,7 +61,6 @@ class Parser:
         '''
         
         func_list = []
-        
         # restrict return-type to be INT or VOID
         while self.current_token.type in (TokenType.INT, TokenType.VOID):
             type_node = self.type_spec()
@@ -89,7 +89,8 @@ class Parser:
                     token=self.current_token
                 )
             func_list.append(node)
-    
+
+
         if not func_list:
             func_list.append(NoOp())
 
@@ -150,6 +151,7 @@ class Parser:
         # for simplicity, we can omit compute type_node, which is INT
         # but for future type extension, we keep compute type_node each-time
         type_node = self.type_spec()
+        # a list of params : formal_param
         param_list = [Param(Var(self.current_token), type_node)]
         self.eat(TokenType.ID)
         while self.current_token.type == TokenType.COMMA:
@@ -164,8 +166,10 @@ class Parser:
     def block(self):
         '''block : LBRACE declarations compound_statement RBRACE'''
         self.eat(TokenType.LBRACE)
+        # 
         declarations = self.declarations()
         compound_statement = self.compound_statement()
+
         self.eat(TokenType.RBRACE)
         block_node = Block(
             declarations = declarations,
@@ -223,6 +227,7 @@ class Parser:
             or self.current_token.type == TokenType.RETURN \
             or self.current_token.type == TokenType.IF \
             or self.current_token.type == TokenType.WHILE:
+            # details for coresponding statement
             statement = self.statement()
             statement_list.append(statement)
         
@@ -563,6 +568,7 @@ class Parser:
 
         '''
         node = self.program()
+        
         if self.current_token.type != TokenType.EOF:
             self.error(
                 error_code = ErrorCode.UNEXPECTED_TOKEN,
@@ -577,6 +583,7 @@ class NodeVisitor:
     def visit(self, node):
         method_name = 'visit_' + type(node).__name__
         visitor = getattr(self, method_name, self.generic_visit)
+        #print("--{}".format(type(node).__name__))
         return visitor(node)
 
     def generic_visit(self, node):

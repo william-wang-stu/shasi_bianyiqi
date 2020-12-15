@@ -19,6 +19,9 @@ class Type(AST):
 
 
 class Param(AST):
+    '''
+    parameter for functions
+    '''
     def __init__(self, var, type):
         self.var = var
         self.type = type
@@ -102,6 +105,9 @@ class If(AST):
 
 
 class VarDecl(AST):
+    '''
+    declare a var
+    '''
     def __init__(self, var, type):
         self.var = var
         self.type = type
