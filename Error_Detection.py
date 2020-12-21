@@ -5,6 +5,9 @@ class ErrorCode(Enum):
     UNEXPECTED_TOKEN = 'Unexpected token'
     ID_NOT_FOUND     = 'Identifier not found'
     DUPLICATE_ID     = 'Duplicate id found'
+    PROCALL_WRONG_TYPE     = 'The type is wrong'
+    PARAM_NUM_NOT_SAME     = 'Param num is not the same'
+    WRONG_TYPE     = 'The type is wrong'
 
 
 class Error(Exception):

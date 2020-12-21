@@ -83,7 +83,7 @@ class ASTVisualizer(NodeVisitor):
         self.dot_body.append(s)
         node._num = self.ncount
         self.ncount += 1
-
+        
         self.visit(node.type)
         s = '  node{} -> node{}\n'.format(node._num, node.type._num)
         self.dot_body.append(s)

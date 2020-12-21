@@ -3,6 +3,7 @@ from Lexer import TokenType
 from Parser import NodeVisitor
 from Error_Detection import ErrorCode, SemanticError
 
+
 class Symbol:
     def __init__(self, name, type = None):
         self.name = name
@@ -39,8 +40,10 @@ class BuiltinTypeSymbol(Symbol):
 
 
 class ProcedureSymbol(Symbol):
-    def __init__(self, name, formal_params = None):
-        super().__init__(name)
+    def __init__(self, node, formal_params = None):
+        super().__init__(node.name)
+        # add return value type for func i.e. INT demo
+        self.type = node.type
         # a list of VarSymbol objects
         self.formal_params = [] if formal_params is None else formal_params
         # a reference to procedure's body (AST sub-tree)
@@ -64,8 +67,10 @@ class ScopedSymbolTable:
         self.enclosing_scope = enclosing_scope
 
     def _init_builtins(self):
+        print("===== _init_builtins start =====")
         self.insert(BuiltinTypeSymbol('INT'))
         self.insert(BuiltinTypeSymbol('VOID'))
+        print("===== _init_builtins finish =====")
 
     def __str__(self):
         prompt = 'SCOPE (SCOPED SYMBOL TABLE)'
@@ -90,19 +95,21 @@ class ScopedSymbolTable:
 
     def log(self, msg):
         if __debug__:
-            pass # print(msg)
+            print(msg) # pass # 
 
     def insert(self, symbol):
-        self.log(f'Insert: {symbol.name}')
+        
+        self.log(f'Insert: {symbol.name}') # {symbol.type}
         symbol.scope_level = self.scope_level
         self._symbols[symbol.name] = symbol
 
+
     def lookup(self, name, current_scope_only = False):
-        self.log(f'Lookup: {name}. (Scope name: {self.scope_name})')
         # 'symbol' is either an instance of the Symbol class or None
         symbol = self._symbols.get(name)
 
         if symbol is not None:
+            self.log(f'Lookup: {name}. (Scope name: {self.scope_name})')
             return symbol
 
         if current_scope_only:
@@ -112,6 +119,8 @@ class ScopedSymbolTable:
         if self.enclosing_scope is not None:
             return self.enclosing_scope.lookup(name)
 
+        # self.log(f'Undefined variable : {name}.')
+
 
 class SemanticAnalyzer(NodeVisitor):
     def __init__(self):
@@ -119,7 +128,7 @@ class SemanticAnalyzer(NodeVisitor):
 
     def log(self, msg):
         if __debug__:
-            pass # print(msg)
+            print(msg) #pass # 
 
     def error(self, error_code, token):
         raise SemanticError(
@@ -130,9 +139,14 @@ class SemanticAnalyzer(NodeVisitor):
 
     def visit_Var(self, node):
         var_name = node.value
+        
+        # print("visit_Var", var_name)
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             self.error(error_code = ErrorCode.ID_NOT_FOUND, token = node.token)
+        node.type = var_symbol.type
+
+        
 
     def visit_NoOp(self, node):
         pass
@@ -145,12 +159,30 @@ class SemanticAnalyzer(NodeVisitor):
         self.visit(node.type)
 
     def visit_BinOp(self, node):
-        pass
+        '''
+        check same type
+        '''
+        # print(node.left.type, node.right.type)
+        node_left = self.current_scope.lookup(node.left.value)
+        # print("node_left : " , node_left.type,node, node.right.type)
+        if node_left.type != node.right.type:
+            self.error(
+                error_code=ErrorCode.WRONG_TYPE,
+                token=node.token,
+            )
+        node.type = node_left.type    
+        if node.type == TokenType.INT:
+            node.type = 'INT'
+
+        #pass
 
     def visit_Num(self, node):
         pass
-
+    
     def visit_Program(self, node):
+        '''
+
+        '''
         self.log('ENTER scope: global')
         global_scope = ScopedSymbolTable(
             scope_name = 'global',
@@ -172,22 +204,30 @@ class SemanticAnalyzer(NodeVisitor):
         self.current_scope = self.current_scope.enclosing_scope
 
     def visit_Function(self, node):
+        # find a new func
         proc_name = node.name
-        proc_symbol = ProcedureSymbol(proc_name)
+
+        print("proc_name : ", proc_name)
+        # add to the symbol table (current_scope->_symbols[symbol.name] = symbol
+        proc_symbol = ProcedureSymbol(node)#proc_name)
         self.current_scope.insert(proc_symbol)
 
         self.log(f'ENTER scope: {proc_name}')
+        # enter a local scope
         procedure_scope = ScopedSymbolTable(
             scope_name = proc_name,
             scope_level = self.current_scope.scope_level + 1,
+            # last scope !
             enclosing_scope = self.current_scope
         )
         self.current_scope = procedure_scope
 
         # Insert parameters into the procedure scope
         for param_node in node.formal_params:
-            param_type = self.current_scope.lookup(param_node.type.value)
+            # we don't need to lookup var in the func declaration
+            param_type = param_node.type.value # self.current_scope.lookup(param_node.type.value)
             param_name = param_node.var.value
+            # add the formal param into the table
             var_symbol = VarSymbol(param_name, param_type)
             self.current_scope.insert(var_symbol)
             proc_symbol.formal_params.append(var_symbol)
@@ -218,8 +258,18 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(child)
 
     def visit_Assign(self, node):
+        '''
+        check same type
+        '''
         self.visit(node.left)
         self.visit(node.right)
+        node_left = self.current_scope.lookup(node.left.value)
+  
+        if node_left.type != node.right.type:
+            self.error(
+                error_code=ErrorCode.WRONG_TYPE,
+                token=node.token,
+            )
 
     def visit_Return(self, node):
         self.visit(node.expr)
@@ -235,12 +285,13 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(node.else_block)
 
     def visit_VarDecl(self, node):
+        '''
+        declaration for variables
+        '''
         type_name = node.type.value
-        type_symbol = self.current_scope.lookup(type_name)
-
         # Create the symbol and insert it into the symbol table.
         var_name = node.var.value
-        var_symbol = VarSymbol(var_name, type_symbol)
+        var_symbol = VarSymbol(var_name, type_name) # type_symbol)
 
         # Raise Error if the table already has a symbol with the same name
         if self.current_scope.lookup(var_name, current_scope_only = True):
@@ -253,12 +304,59 @@ class SemanticAnalyzer(NodeVisitor):
         self.current_scope.insert(var_symbol)
 
     def visit_ProcedureCall(self, node):
-        for param_node in node.actual_params:
-            self.visit(param_node)
+        '''
+        handle 3 possible errors:
+         ## 1. The num of params is different 
+         2. The var is not declared
+         3. The type of the var is wrong 
+        '''
+        symbol_tmp = self.current_scope.lookup(node.name)
+        # # Raise Error the number of the params is not the same 
+        # if len(node.actual_params) != len(symbol_tmp.formal_params):
+        #     self.error(
+        #                 error_code=ErrorCode.ID_NOT_FOUND,
+        #                 token=node.name,
+        #     )
 
+        # formal_param_list = [Param(Var(token), type_node)]
+
+        for idx, param_node in enumerate(node.actual_params):
+            # actual_params only got value
+
+            self.visit(param_node)
+            var_name = param_node.value
+            # func return as param!
+            if var_name == None:
+                if param_node.type != symbol_tmp.formal_params[idx].type :
+                    self.error(
+                        error_code=ErrorCode.PROCALL_WRONG_TYPE,
+                        token=param_node.token,
+                    )
+            else:
+                    
+                # the acutal_param
+                actual_tmp = self.current_scope.lookup(var_name)
+                # Raise Error if the variable is not declared or with the wrong type 
+                if actual_tmp is None:
+                    self.error(
+                            error_code=ErrorCode.ID_NOT_FOUND,
+                            token=param_node.token,
+                    )
+                else:
+                    # print("param_node.type : ", symbol_tmp)
+                    if actual_tmp.type != symbol_tmp.formal_params[idx].type :
+                        self.error(
+                            error_code=ErrorCode.PROCALL_WRONG_TYPE,
+                            token=param_node.var_node.token,
+                        )
+
+            
+
+            
         proc_symbol = self.current_scope.lookup(node.name)
         # accessed by the interpreter when executing procedure call
         node.proc_symbol = proc_symbol
+        node.type = proc_symbol.type.value
 
 
 class ActivationRecordType(Enum):
@@ -303,6 +401,8 @@ class ActivationRecord:
         return s
     def __repr__(self):
         return self.__str__()
+
+
 
 
 class RuntimeAnalyzer(NodeVisitor):
