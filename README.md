@@ -29,6 +29,10 @@ A simple C-like Interpreter
 - Add Semantic-Analyzer in `intermediate_code.py`: convert AST to three-address-code
 - Add simple demo in `test.py` for Semantic-Analyzer
 
+12.28
+- Finish Semantic Analyzer
+- Finish RunTime Analyzer
+
 ## Summary
 11.15
 - For starter, plz run `python main.py` or `python Interpreter.py testfile.txt False > ast.dot && dot -Tpng -o ast.png ast.dot`
@@ -42,6 +46,10 @@ A simple C-like Interpreter
 - Add testfile `test_interpreter.py` for more interesting tests
 - todos:
   - Add more tests
+  - GUI
+
+12.28
+- todos:
   - GUI
 
 ## References
