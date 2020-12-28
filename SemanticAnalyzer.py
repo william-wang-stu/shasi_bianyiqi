@@ -8,7 +8,7 @@ class Symbol:
     def __init__(self, name, type = None):
         self.name = name
         self.type = type
-        self._scopelvl = 0
+        self.scope_level = 0
 
 
 class VarSymbol(Symbol):
@@ -95,14 +95,12 @@ class ScopedSymbolTable:
 
     def log(self, msg):
         if __debug__:
-            print(msg) # pass # 
+            print(msg)
 
     def insert(self, symbol):
-        
         self.log(f'Insert: {symbol.name}') # {symbol.type}
         symbol.scope_level = self.scope_level
         self._symbols[symbol.name] = symbol
-
 
     def lookup(self, name, current_scope_only = False):
         # 'symbol' is either an instance of the Symbol class or None
@@ -128,7 +126,7 @@ class SemanticAnalyzer(NodeVisitor):
 
     def log(self, msg):
         if __debug__:
-            print(msg) #pass # 
+            print(msg)
 
     def error(self, error_code, token):
         raise SemanticError(
@@ -138,15 +136,14 @@ class SemanticAnalyzer(NodeVisitor):
         )
 
     def visit_Var(self, node):
+        # self.log('enter visit_var')
         var_name = node.value
-        
         # print("visit_Var", var_name)
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             self.error(error_code = ErrorCode.ID_NOT_FOUND, token = node.token)
         node.type = var_symbol.type
-
-        
+        # self.log('leave visit_var')
 
     def visit_NoOp(self, node):
         pass
@@ -159,30 +156,34 @@ class SemanticAnalyzer(NodeVisitor):
         self.visit(node.type)
 
     def visit_BinOp(self, node):
-        '''
-        check same type
-        '''
-        # print(node.left.type, node.right.type)
-        node_left = self.current_scope.lookup(node.left.value)
-        # print("node_left : " , node_left.type,node, node.right.type)
-        if node_left.type != node.right.type:
+        # we have to judge whether node.left and node.right is of same type
+        self.log('enter visit_binop')
+        self.visit(node.left)
+        self.visit(node.right)
+
+        # here we dont need to perform type-check
+        # bcz we have already done it in self.visit(node.*)
+        if node.left.type != node.right.type:
             self.error(
-                error_code=ErrorCode.WRONG_TYPE,
+                error_code=ErrorCode.TYPE_UNMATCHED,
                 token=node.token,
             )
-        node.type = node_left.type    
-        if node.type == TokenType.INT:
-            node.type = 'INT'
-
-        #pass
+        node.type = node.left.type
+        self.log('leave visit_binop')
 
     def visit_Num(self, node):
-        pass
+        # token: <type: TokenType.INTEGER_CONST, value: ~>
+        # self.log('enter visit_num')
+        if node.token.type == TokenType.INTEGER_CONST:
+            node.type = 'INT'
+        elif node.token.type == TokenType.REAL_CONST:
+            node.type = 'FLOAT'
+        else:
+            node.type = None
+        # self.log('leave visit_num')
     
     def visit_Program(self, node):
-        '''
-
-        '''
+        # we assume the outest space is 'global' scope
         self.log('ENTER scope: global')
         global_scope = ScopedSymbolTable(
             scope_name = 'global',
@@ -204,20 +205,20 @@ class SemanticAnalyzer(NodeVisitor):
         self.current_scope = self.current_scope.enclosing_scope
 
     def visit_Function(self, node):
-        # find a new func
         proc_name = node.name
-
-        print("proc_name : ", proc_name)
-        # add to the symbol table (current_scope->_symbols[symbol.name] = symbol
-        proc_symbol = ProcedureSymbol(node)#proc_name)
-        self.current_scope.insert(proc_symbol)
-
         self.log(f'ENTER scope: {proc_name}')
+
+        # add to the symbol table (current_scope->_symbols[symbol.name] = symbol
+        proc_symbol = ProcedureSymbol(
+            node = node,
+        )
+        self.current_scope.insert(proc_symbol)
+        
         # enter a local scope
         procedure_scope = ScopedSymbolTable(
             scope_name = proc_name,
             scope_level = self.current_scope.scope_level + 1,
-            # last scope !
+            # AKA last scope
             enclosing_scope = self.current_scope
         )
         self.current_scope = procedure_scope
@@ -225,13 +226,15 @@ class SemanticAnalyzer(NodeVisitor):
         # Insert parameters into the procedure scope
         for param_node in node.formal_params:
             # we don't need to lookup var in the func declaration
-            param_type = param_node.type.value # self.current_scope.lookup(param_node.type.value)
-            param_name = param_node.var.value
-            # add the formal param into the table
-            var_symbol = VarSymbol(param_name, param_type)
-            self.current_scope.insert(var_symbol)
-            proc_symbol.formal_params.append(var_symbol)
-
+            # self.current_scope.lookup(param_node.type.value)
+            param_type = param_node.type.value
+            if param_type != 'VOID':
+                param_name = param_node.var.value
+                var_symbol = VarSymbol(param_name, param_type)
+                proc_symbol.formal_params.append(var_symbol)
+                # also remind to insert param_varsymbol into current_scope (the local one)
+                self.current_scope.insert(var_symbol)
+        
         # visit block
         self.visit(node.block)
 
@@ -258,18 +261,18 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(child)
 
     def visit_Assign(self, node):
-        '''
-        check same type
-        '''
+        # we have to judge whether node.left and node.right is of same type
+        self.log('enter visit_assign')
         self.visit(node.left)
         self.visit(node.right)
-        node_left = self.current_scope.lookup(node.left.value)
-  
-        if node_left.type != node.right.type:
+
+        # perform type-check, else raise error
+        if node.left.type != node.right.type:
             self.error(
-                error_code=ErrorCode.WRONG_TYPE,
+                error_code=ErrorCode.TYPE_UNMATCHED,
                 token=node.token,
             )
+        self.log('leave visit_assign')
 
     def visit_Return(self, node):
         self.visit(node.expr)
@@ -285,13 +288,11 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(node.else_block)
 
     def visit_VarDecl(self, node):
-        '''
-        declaration for variables
-        '''
-        type_name = node.type.value
         # Create the symbol and insert it into the symbol table.
+        self.log('enter visit_vardecl')
+        type_name = node.type.value
         var_name = node.var.value
-        var_symbol = VarSymbol(var_name, type_name) # type_symbol)
+        var_symbol = VarSymbol(var_name, type_name)
 
         # Raise Error if the table already has a symbol with the same name
         if self.current_scope.lookup(var_name, current_scope_only = True):
@@ -302,61 +303,44 @@ class SemanticAnalyzer(NodeVisitor):
 
         # Else Insert it into the symbol table
         self.current_scope.insert(var_symbol)
+        self.log('leave visit_vardecl')
 
     def visit_ProcedureCall(self, node):
         '''
         handle 3 possible errors:
-         ## 1. The num of params is different 
-         2. The var is not declared
-         3. The type of the var is wrong 
+        1. The num of formal-param and actual-param is different
+        2. The num is correct, But param (if it is Var Object) is not declared
+        3. The num is correct, But its type (Var or Num Object) is unmatched with Actual Params
         '''
-        symbol_tmp = self.current_scope.lookup(node.name)
-        # # Raise Error the number of the params is not the same 
-        # if len(node.actual_params) != len(symbol_tmp.formal_params):
-        #     self.error(
-        #                 error_code=ErrorCode.ID_NOT_FOUND,
-        #                 token=node.name,
-        #     )
-
-        # formal_param_list = [Param(Var(token), type_node)]
-
-        for idx, param_node in enumerate(node.actual_params):
-            # actual_params only got value
-
-            self.visit(param_node)
-            var_name = param_node.value
-            # func return as param!
-            if var_name == None:
-                if param_node.type != symbol_tmp.formal_params[idx].type :
-                    self.error(
-                        error_code=ErrorCode.PROCALL_WRONG_TYPE,
-                        token=param_node.token,
-                    )
-            else:
-                    
-                # the acutal_param
-                actual_tmp = self.current_scope.lookup(var_name)
-                # Raise Error if the variable is not declared or with the wrong type 
-                if actual_tmp is None:
-                    self.error(
-                            error_code=ErrorCode.ID_NOT_FOUND,
-                            token=param_node.token,
-                    )
-                else:
-                    # print("param_node.type : ", symbol_tmp)
-                    if actual_tmp.type != symbol_tmp.formal_params[idx].type :
-                        self.error(
-                            error_code=ErrorCode.PROCALL_WRONG_TYPE,
-                            token=param_node.var_node.token,
-                        )
-
-            
-
-            
+        self.log(f'enter visit_proccall {node.name}')
         proc_symbol = self.current_scope.lookup(node.name)
+        node.type = proc_symbol.type.value
+
+        # address 1st error
+        # use len() to detect length of list object
+        if len(proc_symbol.formal_params) != len(node.actual_params):
+            self.error(
+                error_code=ErrorCode.PARAM_NUM_NOT_CONSISTENT,
+                token=node.token
+            )
+
+        # address 2nd and 3rd error
+        for idx, param_node in enumerate(node.actual_params):
+            self.visit(param_node)
+            # if actual params is of Var Object, we need to perform type-check and scope-lookup;
+            # elif actual params is of Num Object, we only need to perform type-check
+            # Here, we have already perform scope-lookup in self.visit(*)
+            # So what we only need to do is type-check
+
+            if param_node.type != proc_symbol.formal_params[idx].type:
+                self.error(
+                    error_code=ErrorCode.PROCALL_TYPE_UNMATCHED,
+                    token=param_node.token,
+                )
+        
         # accessed by the interpreter when executing procedure call
         node.proc_symbol = proc_symbol
-        node.type = proc_symbol.type.value
+        self.log(f'leave visit_proccall {node.name}')
 
 
 class ActivationRecordType(Enum):

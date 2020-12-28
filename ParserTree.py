@@ -8,7 +8,8 @@ class Var(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
-        self.type = TokenType.INT
+        # self.type would be updated in visit_var
+        self.type = None
 
 
 class NoOp(AST):
@@ -35,14 +36,16 @@ class BinOp(AST):
         self.left = left
         self.token = self.op = op
         self.right = right
-        self.type = 'VOID'#TokenType.VOID
+        # self.type should be updated in visit_binop
+        self.type = None
 
 
 class Num(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
-        self.type = 'INT'#TokenType.INT
+        # self.type should be updated in visit_num
+        self.type = None
 
 
 class Program(AST):
@@ -128,9 +131,11 @@ class ProcedureDecl(AST):
 class ProcedureCall(AST):
     def __init__(self, name, actual_params, token):
         self.name = name
+        # a list of Var object or Num object
         self.actual_params = actual_params
         self.token = token
         # a reference to procedure declaration symbol
         self.proc_symbol = None
+        # to store what
         self.value = None
         self.type = None

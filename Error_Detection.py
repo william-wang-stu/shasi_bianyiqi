@@ -2,12 +2,12 @@
 from enum import Enum
 
 class ErrorCode(Enum):
-    UNEXPECTED_TOKEN = 'Unexpected token'
-    ID_NOT_FOUND     = 'Identifier not found'
-    DUPLICATE_ID     = 'Duplicate id found'
-    PROCALL_WRONG_TYPE     = 'The type is wrong'
-    PARAM_NUM_NOT_SAME     = 'Param num is not the same'
-    WRONG_TYPE     = 'The type is wrong'
+    UNEXPECTED_TOKEN        = 'Unexpected token'
+    ID_NOT_FOUND            = 'Identifier not found'
+    DUPLICATE_ID            = 'Duplicate id found'
+    PROCALL_TYPE_UNMATCHED  = 'Proccall Type Unmatched'
+    PARAM_NUM_NOT_CONSISTENT= 'Param Num Not Consistent'
+    TYPE_UNMATCHED          = 'Type Unmatched'
 
 
 class Error(Exception):
