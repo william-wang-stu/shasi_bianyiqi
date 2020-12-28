@@ -1,3 +1,5 @@
+from Lexer import TokenType 
+
 class AST:
     pass
 
@@ -6,6 +8,7 @@ class Var(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
+        self.type = TokenType.INT
 
 
 class NoOp(AST):
@@ -32,12 +35,14 @@ class BinOp(AST):
         self.left = left
         self.token = self.op = op
         self.right = right
+        self.type = 'VOID'#TokenType.VOID
 
 
 class Num(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
+        self.type = 'INT'#TokenType.INT
 
 
 class Program(AST):
@@ -127,3 +132,5 @@ class ProcedureCall(AST):
         self.token = token
         # a reference to procedure declaration symbol
         self.proc_symbol = None
+        self.value = None
+        self.type = None

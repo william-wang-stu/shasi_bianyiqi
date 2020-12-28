@@ -1,0 +1,95 @@
+digraph astgraph {
+  node [shape=circle, fontsize=12, fontname="Courier", height=.1];
+  ranksep=.3;
+  edge [arrowsize=.5]
+
+  node1 [label="Program"]
+  node2 [label="Function:demo"]
+  node3 [label="INT"]
+  node2 -> node3
+  node4 [label="Param"]
+  node5 [label="a"]
+  node4 -> node5
+  node6 [label="INT"]
+  node4 -> node6
+  node2 -> node4
+  node7 [label="Block"]
+  node8 [label="Declr"]
+  node9 [label="NoOp"]
+  node8 -> node9
+  node7 -> node8
+  node10 [label="Compound"]
+  node11 [label="="]
+  node12 [label="a"]
+  node13 [label="+"]
+  node14 [label="a"]
+  node15 [label="2"]
+  node13 -> node14
+  node13 -> node15
+  node11 -> node12
+  node11 -> node13
+  node10 -> node11
+  node16 [label="RETURN"]
+  node17 [label="2"]
+  node16 -> node17
+  node10 -> node16
+  node7 -> node10
+  node2 -> node7
+  node1 -> node2
+  node18 [label="Function:main"]
+  node19 [label="VOID"]
+  node18 -> node19
+  node20 [label="Param"]
+  node21 [label="VOID"]
+  node20 -> node21
+  node22 [label="VOID"]
+  node20 -> node22
+  node18 -> node20
+  node23 [label="Block"]
+  node24 [label="Declr"]
+  node25 [label="VarDecl"]
+  node26 [label="a"]
+  node25 -> node26
+  node27 [label="INT"]
+  node25 -> node27
+  node24 -> node25
+  node28 [label="VarDecl"]
+  node29 [label="b"]
+  node28 -> node29
+  node30 [label="INT"]
+  node28 -> node30
+  node24 -> node28
+  node31 [label="VarDecl"]
+  node32 [label="c"]
+  node31 -> node32
+  node33 [label="INT"]
+  node31 -> node33
+  node24 -> node31
+  node23 -> node24
+  node34 [label="Compound"]
+  node35 [label="="]
+  node36 [label="a"]
+  node37 [label="3"]
+  node35 -> node36
+  node35 -> node37
+  node34 -> node35
+  node38 [label="="]
+  node39 [label="b"]
+  node40 [label="4"]
+  node38 -> node39
+  node38 -> node40
+  node34 -> node38
+  node41 [label="="]
+  node42 [label="a"]
+  node43 [label="ProcCall:demo"]
+  node44 [label="ProcCall:demo"]
+  node45 [label="a"]
+  node44 -> node45
+  node43 -> node44
+  node41 -> node42
+  node41 -> node43
+  node34 -> node41
+  node23 -> node34
+  node18 -> node23
+  node1 -> node18
+}

@@ -64,11 +64,11 @@ class Parser:
         while self.current_token.type in (TokenType.INT, TokenType.VOID):
             type_node = self.type_spec()
             var_node  = self.variable()
-            # int a;
+            # global var  i.e int a;
             if self.current_token.type == TokenType.SEMI:
                 self.eat(TokenType.SEMI)
                 node = VarDecl(var_node, type_node)
-            # int func() { <block> }
+            # func declaration  i.e int func() { <block> }
             elif self.current_token.type == TokenType.LPAREN:
                 self.eat(TokenType.LPAREN)
                 # fetch param-list of the function
@@ -81,6 +81,7 @@ class Parser:
                     formal_params = program_params,
                     block = program_block
                 )
+                # print(node.type)
             else:
                 node = NoOp()
                 self.error(
