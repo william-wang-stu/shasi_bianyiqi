@@ -32,7 +32,6 @@ if __name__ == '__main__':
 			b=4;
 			c=2;
 			a=program(a,b,demo(c));
-		}
 	'''
 	lexer = Lexer(text)
 	parser = Parser(lexer)

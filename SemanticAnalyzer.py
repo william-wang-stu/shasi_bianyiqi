@@ -124,17 +124,30 @@ class ScopedSymbolTable:
 class SemanticAnalyzer(NodeVisitor):
     def __init__(self):
         self.current_scope = None
+        # log errors to be used in UI
+        self.err_list = []
+    
+    def getErrList(self):
+        return self.err_list
 
     def log(self, msg):
         if _LOG:
             print(msg)
 
     def error(self, error_code, token):
+        '''
         raise SemanticError(
             error_code=error_code,
             token=token,
             message=f'{error_code.value} -> {token}',
         )
+        '''
+        semanticErr = SemanticError(
+            error_code=error_code,
+            token=token,
+            message=f'{error_code.value} -> {token}',
+        )
+        self.err_list.append(semanticErr)
 
     def visit_Var(self, node):
         # self.log('enter visit_var')
