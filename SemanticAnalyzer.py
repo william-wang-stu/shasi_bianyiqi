@@ -156,7 +156,8 @@ class SemanticAnalyzer(NodeVisitor):
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             self.error(error_code = ErrorCode.ID_NOT_FOUND, token = node.token)
-        node.type = var_symbol.type
+        else:
+            node.type = var_symbol.type
         # self.log('leave visit_var')
 
     def visit_NoOp(self, node):

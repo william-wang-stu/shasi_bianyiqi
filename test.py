@@ -27,14 +27,16 @@ if __name__ == '__main__':
 		{
 			int a;
 			int b;
-			int c;
 			a=3;
 			b=4;
 			c=2;
 			a=program(a,b,demo(c));
 	'''
 	lexer = Lexer(text)
-	parser = Parser(lexer)
+	# parser = Parser(lexer)
+	flag, token_list = lexer.get_all_tokens()
+	for token in token_list:
+		print(token)
 	
 	# viz = ASTVisualizer(parser)
 	# content = viz.gendot()
@@ -45,10 +47,14 @@ if __name__ == '__main__':
 	# for instr in irg.code:
 	# 	print(instr)
 
+	'''
 	tree = parser.parseProcCall()
 	sm = SemanticAnalyzer()
 	sm.visit(tree)
+	for err in sm.getErrList():
+		print(err)
 	
 	# tree = parser.parseProcCall()
 	rt = RuntimeAnalyzer()
 	rt.visit(tree)
+	'''

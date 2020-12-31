@@ -3,7 +3,7 @@ from Lexer import TokenType
 from Parser import NodeVisitor
 
 MAIN_FUNC_NAME = 'main'
-_LOG = True
+_LOG = False
 
 class ActivationRecordType(Enum):
     PROGRAM = 'PROGRAM'
